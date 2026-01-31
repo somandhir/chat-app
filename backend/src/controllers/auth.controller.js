@@ -72,6 +72,7 @@ export const login = async (req, res) => {
     res.status(500).json({ message: "Internal server error" });
   }
 };
+
 export const logout = (req, res) => {
   try {
     res.cookie("jwt", "", { maxAge: 0 });
