@@ -9,13 +9,15 @@ import SettingsPage from "./pages/SettingsPage";
 import LoginPage from "./pages/LoginPage";
 import ProfilePage from "./pages/ProfilePage";
 import { useAuthStore } from "./store/useAuthStore";
+import { Toaster } from "react-hot-toast";
+import { COLORS } from "./UI/ui.js";
 
 function App() {
   const { authUser, checkAuth, isCheckingAuth } = useAuthStore();
   useEffect(() => {
     checkAuth();
-  }, [checkAuth]);
-  console.log({ authUser });
+  }, []);
+  // console.log({ authUser });
   if (isCheckingAuth && !authUser) {
     return (
       <div className="flex items-center justify-center h-screen">
@@ -39,12 +41,47 @@ function App() {
           path="/login"
           element={!authUser ? <LoginPage /> : <Navigate to="/" />}
         />
-        <Route path="/setting" element={<SettingsPage />} />
         <Route
           path="/profile"
           element={authUser ? <ProfilePage /> : <Navigate to="/login" />}
         />
       </Routes>
+      <Toaster
+        position="top-center"
+        reverseOrder={false}
+        toastOptions={{
+          style: {
+            background: "#141414",
+            color: "#ffffff",
+            border: "1px solid #2a2a2a",
+            borderRadius: "16px",
+            padding: "16px",
+            boxShadow: "0 0 50px rgba(0, 212, 255, 0.15)",
+          },
+          success: {
+            style: {
+              background: "#141414",
+              color: "#ffffff",
+              border: "1px solid #2a2a2a",
+            },
+            iconTheme: {
+              primary: "#00d4ff",
+              secondary: "#141414",
+            },
+          },
+          error: {
+            style: {
+              background: "#141414",
+              color: "#ffffff",
+              border: "1px solid #2a2a2a",
+            },
+            iconTheme: {
+              primary: "#ff6b6b",
+              secondary: "#141414",
+            },
+          },
+        }}
+      />
     </>
   );
 }
