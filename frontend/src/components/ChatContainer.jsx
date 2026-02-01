@@ -7,17 +7,36 @@ import MessageSkeleton from "./Skeletons/MessageSkeleton";
 import { COLORS } from "../UI/ui.js";
 
 function ChatContainer() {
-  const { messages, getMessages, isMessagesLoading, selectedUser } = useChatStore();
+  const {
+    messages,
+    getMessages,
+    isMessagesLoading,
+    selectedUser,
+    subscribeToMessages,
+    unsubscribeFromMessages,
+  } = useChatStore();
   const { authUser } = useAuthStore();
   const messageEndRef = useRef(null);
 
   useEffect(() => {
     getMessages(selectedUser._id);
-  }, [selectedUser._id, getMessages]);
+    subscribeToMessages();
+    return () => {
+      unsubscribeFromMessages();
+    };
+  }, [
+    selectedUser._id,
+    getMessages,
+    subscribeToMessages,
+    unsubscribeFromMessages,
+  ]);
 
   useEffect(() => {
     if (messageEndRef.current && messages) {
-      messageEndRef.current.scrollIntoView({ behavior: "smooth" , block: "nearest"});
+      messageEndRef.current.scrollIntoView({
+        behavior: "smooth",
+        block: "nearest",
+      });
     }
   }, [messages]);
 
@@ -38,14 +57,15 @@ function ChatContainer() {
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
         {messages.map((message) => {
           const isMyMessage = message.senderId === authUser._id;
-          
+
           return (
             <div
               key={message._id}
               className={`flex ${isMyMessage ? "justify-end" : "justify-start"}`}
             >
-              <div className={`flex flex-col max-w-[70%] ${isMyMessage ? "items-end" : "items-start"}`}>
-                
+              <div
+                className={`flex flex-col max-w-[70%] ${isMyMessage ? "items-end" : "items-start"}`}
+              >
                 {/* Message Bubble */}
                 <div
                   className={`px-4 py-2.5 rounded-2xl shadow-sm ${
@@ -61,10 +81,14 @@ function ChatContainer() {
                       className="rounded-lg mb-2 max-w-50 border border-gray-800"
                     />
                   )}
-                  {message.text && <p className="text-sm leading-relaxed">{message.text}</p>}
+                  {message.text && (
+                    <p className="text-sm leading-relaxed">{message.text}</p>
+                  )}
                 </div>
 
-                <span className={`text-[10px] mt-1 ${COLORS.textMuted} opacity-70 px-1`}>
+                <span
+                  className={`text-[10px] mt-1 ${COLORS.textMuted} opacity-70 px-1`}
+                >
                   {new Date(message.createdAt).toLocaleTimeString([], {
                     hour: "2-digit",
                     minute: "2-digit",

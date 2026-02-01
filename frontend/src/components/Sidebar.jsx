@@ -4,15 +4,24 @@ import SideBarSkeleton from "./Skeletons/SideBarSkeleton";
 import { Users } from "lucide-react";
 import { COLORS, EFFECTS } from "../UI/ui.js";
 import { useAuthStore } from "../store/useAuthStore.js";
+import { useState } from "react";
 
 function Sidebar() {
   const { getUsers, users, selectedUser, setSelectedUser, isUsersLoading } =
     useChatStore();
-  const { onlineUsers } = useAuthStore(); // todo: logic later
+  const { onlineUsers } = useAuthStore();
+
+  const [showOnlineOnly, setShowOnlineOnly] = useState(false);
 
   useEffect(() => {
     getUsers();
   }, [getUsers]);
+
+  const filteredUsers = showOnlineOnly
+    ? users.filter((user) => onlineUsers.includes(user._id))
+    : users;
+  console.log(showOnlineOnly);
+  console.log(filteredUsers);
 
   if (isUsersLoading) return <SideBarSkeleton />;
 
@@ -22,17 +31,36 @@ function Sidebar() {
     >
       {/* Header */}
       <div className={`border-b ${COLORS.border} w-full p-5 cursor-pointer`}>
-        <div className="flex items-center gap-2" onClick={()=>setSelectedUser(null)}>
+        <div
+          className="flex items-center gap-2"
+          onClick={() => setSelectedUser(null)}
+        >
           <Users className={`size-6 ${COLORS.textPrimary}`} />
           <span className={`font-medium hidden lg:block ${COLORS.textPrimary}`}>
             Contacts
+          </span>
+        </div>
+        {/* online filter toggle */}
+        <div className="mt-3 hidden lg:flex items-center gap-2">
+          <label className="cursor-pointer flex items-center gap-2">
+            <input
+              type="checkbox"
+              checked={showOnlineOnly}
+              onChange={(e) => setShowOnlineOnly(e.target.checked)}
+              className="checkbox checkbox-sm"
+            />
+            <span className="text-sm">Show online only</span>
+          </label>
+          <span className="text-xs text-zinc-500">
+            {" "}
+            {onlineUsers.length - 1} online{" "}
           </span>
         </div>
       </div>
 
       {/* User List */}
       <div className="overflow-y-auto w-full py-3 scrollbar-thin scrollbar-thumb-gray-800">
-        {users.map((user) => (
+        {filteredUsers.map((user) => (
           <button
             key={user._id}
             onClick={() => {
@@ -73,7 +101,7 @@ function Sidebar() {
           </button>
         ))}
 
-        {users.length === 0 && (
+        {filteredUsers.length === 0 && (
           <div className={`text-center ${COLORS.textMuted} py-8`}>
             No users found
           </div>
