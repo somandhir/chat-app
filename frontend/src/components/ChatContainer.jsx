@@ -87,8 +87,14 @@ function ChatContainer() {
                 </div>
 
                 <span
-                  className={`text-[10px] mt-1 ${COLORS.textMuted} opacity-70 px-1`}
+                  className={`flex gap-1 text-[10px] mt-1 ${COLORS.textMuted} opacity-70 px-1`}
                 >
+                  {isMyMessage && (
+                    <span className={`capitalize font-medium ${message.state==="sent" ? COLORS.inputFocus : ""} `}>
+                      {message.state} •
+                    </span>
+                  )}
+
                   {new Date(message.createdAt).toLocaleTimeString([], {
                     hour: "2-digit",
                     minute: "2-digit",

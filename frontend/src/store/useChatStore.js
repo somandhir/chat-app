@@ -26,6 +26,8 @@ export const useChatStore = create((set, get) => ({
     try {
       const res = await axiosInstance.get(`/messages/${userId}`);
       set({ messages: res.data });
+
+      get().markMessagesAsSeen(userId);
     } catch (error) {
       console.error("error in getMessage");
       toast.error(error?.response?.data?.message || "something went wrong");
@@ -55,13 +57,40 @@ export const useChatStore = create((set, get) => ({
       set({
         messages: [...get().messages, newMessage],
       });
+      get().markMessagesAsSeen(selectedUser._id);
+    });
+    socket.on("messagesSeen", ({ recieverId }) => {
+      if (selectedUser._id === recieverId) {
+        const updatedMessages = get().messages.map((msg) =>
+          msg.state !== "seen" ? { ...msg, state: "seen" } : msg,
+        );
+        set({ messages: updatedMessages }); 
+      }
+    });
+    socket.on("messagesDelivered", ({ deliveredTo }) => {
+      if (get().selectedUser?._id === deliveredTo) {
+        const updatedMessages = get().messages.map((msg) =>
+          msg.state === "sent" ? { ...msg, state: "delivered" } : msg,
+        );
+        set({ messages: updatedMessages });
+      }
     });
   },
 
   unsubscribeFromMessages: () => {
     const socket = useAuthStore.getState().socket;
     socket.off("newMessage");
+    socket.off("messagesSeen");
+    socket.off("messagesDelivered");
   },
 
   setSelectedUser: (selectedUser) => set({ selectedUser: selectedUser }),
+
+  markMessagesAsSeen: async (userId) => {
+    try {
+      await axiosInstance.post(`/messages/markSeen/${userId}`);
+    } catch (error) {
+      console.log("error in markMessagesAsSeen");
+    }
+  },
 }));

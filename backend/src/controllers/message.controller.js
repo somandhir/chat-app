@@ -47,16 +47,18 @@ export const sendMessage = async (req, res) => {
       const uploadResponse = await cloudinary.uploader.upload(image);
       imageUrl = uploadResponse.secure_url;
     }
+    const recieverSocketId = getReceiverSocketId(recieverId);
+    const currentState = recieverSocketId ? "delivered" : "sent";
     const newMessage = new Message({
       senderId: myId,
       recieverId,
       text,
       image: imageUrl,
+      state: currentState,
     });
 
     await newMessage.save();
 
-    const recieverSocketId = getReceiverSocketId(recieverId);
     if (recieverSocketId) {
       io.to(recieverSocketId).emit("newMessage", newMessage);
     }
@@ -64,6 +66,26 @@ export const sendMessage = async (req, res) => {
     res.status(201).json(newMessage);
   } catch (error) {
     console.error("Error in sendMessage controller", error.message);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
+
+export const markMessagesAsSeen = async (req, res) => {
+  try {
+    const myId = req.user._id;
+    const { id: senderId } = req.params;
+    await Message.updateMany(
+      { senderId: senderId, recieverId: myId, state: { $ne: "seen" } },
+      { $set: { state: "seen" } },
+    );
+
+    const senderSocketId = getReceiverSocketId(senderId);
+    if (senderSocketId) {
+      io.to(senderSocketId).emit("messagesSeen", { recieverId: myId });
+    }
+    res.status(200).json({ message: "Messages marked as seen" });
+  } catch (error) {
+    console.error("Error in markMessagesAsSeen:", error.message);
     res.status(500).json({ error: "Internal server error" });
   }
 };
