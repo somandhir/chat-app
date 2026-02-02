@@ -9,6 +9,7 @@ import { useState } from "react";
 function Sidebar() {
   const { getUsers, users, selectedUser, setSelectedUser, isUsersLoading } =
     useChatStore();
+  console.log("users: ",users);
   const { onlineUsers } = useAuthStore();
 
   const [showOnlineOnly, setShowOnlineOnly] = useState(false);
@@ -20,8 +21,8 @@ function Sidebar() {
   const filteredUsers = showOnlineOnly
     ? users.filter((user) => onlineUsers.includes(user._id))
     : users;
-  console.log(showOnlineOnly);
-  console.log(filteredUsers);
+  // console.log(showOnlineOnly);
+  // console.log(filteredUsers);
 
   if (isUsersLoading) return <SideBarSkeleton />;
 
@@ -95,10 +96,12 @@ function Sidebar() {
                 {user.fullName}
               </div>
               <div className={`text-sm ${COLORS.textMuted}`}>
-                {onlineUsers.includes(user._id) ? "Online" : "Offline"}
+                {user.unreadCount > 0 ? `${user.unreadCount} new messages` : (onlineUsers.includes(user._id) ? "Online" : "Offline")}
               </div>
             </div>
           </button>
+          
+          
         ))}
 
         {filteredUsers.length === 0 && (

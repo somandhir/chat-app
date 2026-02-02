@@ -11,10 +11,23 @@ import ProfilePage from "./pages/ProfilePage";
 import { useAuthStore } from "./store/useAuthStore";
 import { Toaster } from "react-hot-toast";
 import { COLORS } from "./UI/ui.js";
+import { useChatStore } from "./store/useChatStore.js";
 
 function App() {
   const { authUser, checkAuth, isCheckingAuth, onlineUsers } = useAuthStore();
   console.log({ onlineUsers });
+
+  const { subscribeToMessages, unsubscribeFromMessages, getUsers } =
+    useChatStore();
+
+  useEffect(() => {
+    if (authUser) {
+      getUsers(); 
+      subscribeToMessages(); 
+    }
+
+    return () => unsubscribeFromMessages();
+  }, [authUser, getUsers, subscribeToMessages, unsubscribeFromMessages]);
 
   useEffect(() => {
     checkAuth();

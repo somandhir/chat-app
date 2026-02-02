@@ -19,13 +19,13 @@ function ChatContainer() {
   const messageEndRef = useRef(null);
 
   useEffect(() => {
-    getMessages(selectedUser._id);
+    getMessages(selectedUser?._id);
     subscribeToMessages();
     return () => {
       unsubscribeFromMessages();
     };
   }, [
-    selectedUser._id,
+    selectedUser?._id,
     getMessages,
     subscribeToMessages,
     unsubscribeFromMessages,
@@ -102,7 +102,7 @@ function ChatContainer() {
                 </span>
               </div>
             </div>
-          );
+          );  
         })}
         {/* Dummy div to anchor the scroll */}
         <div ref={messageEndRef} />

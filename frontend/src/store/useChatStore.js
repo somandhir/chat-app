@@ -49,26 +49,36 @@ export const useChatStore = create((set, get) => ({
   },
 
   subscribeToMessages: () => {
-    const { selectedUser } = get();
-    if (!selectedUser) return;
     const socket = useAuthStore.getState().socket;
+    if (!socket) return;
+
     socket.on("newMessage", (newMessage) => {
-      if (newMessage.senderId !== selectedUser._id) return;
+      const { selectedUser } = get();
+
+      if (!selectedUser || newMessage.senderId !== selectedUser._id) {
+        get().getUsers();
+        return;
+      }
+
       set({
         messages: [...get().messages, newMessage],
       });
       get().markMessagesAsSeen(selectedUser._id);
     });
+
     socket.on("messagesSeen", ({ recieverId }) => {
-      if (selectedUser._id === recieverId) {
+      const { selectedUser } = get();
+      if (selectedUser?._id === recieverId) {
         const updatedMessages = get().messages.map((msg) =>
           msg.state !== "seen" ? { ...msg, state: "seen" } : msg,
         );
-        set({ messages: updatedMessages }); 
+        set({ messages: updatedMessages });
       }
     });
+
     socket.on("messagesDelivered", ({ deliveredTo }) => {
-      if (get().selectedUser?._id === deliveredTo) {
+      const { selectedUser } = get();
+      if (selectedUser?._id === deliveredTo) {
         const updatedMessages = get().messages.map((msg) =>
           msg.state === "sent" ? { ...msg, state: "delivered" } : msg,
         );
@@ -76,15 +86,24 @@ export const useChatStore = create((set, get) => ({
       }
     });
   },
-
   unsubscribeFromMessages: () => {
     const socket = useAuthStore.getState().socket;
+    if (!socket) return;
     socket.off("newMessage");
     socket.off("messagesSeen");
     socket.off("messagesDelivered");
   },
 
-  setSelectedUser: (selectedUser) => set({ selectedUser: selectedUser }),
+  setSelectedUser: (selectedUser) => {
+    set({ selectedUser: selectedUser });
+    if (selectedUser) {
+      const updatedUsers = get().users.map((u) =>
+        u._id === selectedUser._id ? { ...u, unreadCount: 0 } : u,
+      );
+      set({ users: updatedUsers });
+      // get().getMessages(selectedUser._id);
+    }
+  },
 
   markMessagesAsSeen: async (userId) => {
     try {
