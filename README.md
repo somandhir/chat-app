@@ -7,7 +7,7 @@ A modern, full-stack real-time chat application built with React, Node.js, and W
 
 ---
 
-## ✨ Features
+## Features
 
 -  **User Authentication** - Secure JWT-based authentication with bcryptjs password encryption
 -  **Real-Time Messaging** - Instant message delivery using Socket.io
@@ -48,7 +48,7 @@ A modern, full-stack real-time chat application built with React, Node.js, and W
 
 ---
 
-## 📦 Project Structure
+## Project Structure
 
 ```
 chat-app/
@@ -291,7 +291,7 @@ NODE_ENV=production
 
 ---
 
-## 🤝 Contributing
+## Contributing
 
 Contributions are welcome! Feel free to:
 1. Fork the repository
